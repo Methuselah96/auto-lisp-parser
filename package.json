@@ -1,0 +1,16 @@
+{
+  "name": "auto-lisp-parser",
+  "version": "0.0.1",
+  "description": "AutoLISP parser",
+  "license": "Apache-2.0",
+  "scripts": {
+    "build": "tsc --declaration",
+    "format": "prettier --write ."
+  },
+  "devDependencies": {
+    "@types/node": "^16.11.1",
+    "prettier": "2.4.1",
+    "typescript": "~4.4.4"
+  },
+  "packageManager": "yarn@3.0.2"
+}
