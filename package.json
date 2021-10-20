@@ -1,8 +1,15 @@
 {
   "name": "auto-lisp-parser",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "AutoLISP parser",
   "license": "Apache-2.0",
+  "files": [
+    "src",
+    "lib",
+    "NOTICE.md"
+  ],
+  "main": "./lib/index.js",
+  "types": "./lib/index.d.ts",
   "scripts": {
     "build": "tsc --declaration",
     "format": "prettier --write .",

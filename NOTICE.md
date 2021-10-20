@@ -1,4 +1,5 @@
 # https://github.com/Autodesk-AutoCAD/AutoLispExt
+
                               Apache License
                         Version 2.0, January 2004
                      http://www.apache.org/licenses/
@@ -181,7 +182,7 @@ APPENDIX: How to apply the Apache License to your work.
 To apply the Apache License to your work, attach the following
 boilerplate notice, with the fields enclosed by brackets "[]"
 replaced with your own identifying information. (Don't include
-the brackets!)  The text should be enclosed in the appropriate
+the brackets!) The text should be enclosed in the appropriate
 comment syntax for the file format. We also recommend that a
 file or class name and description of purpose be included on the
 same "printed page" as the copyright notice for easier
@@ -202,6 +203,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
 # https://github.com/microsoft/vscode
+
 MIT License
 
 Copyright (c) 2015 - present Microsoft Corporation

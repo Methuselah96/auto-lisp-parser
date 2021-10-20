@@ -42,7 +42,7 @@ function readDataFileByLine(
 ) {
   const dataPath = path.resolve(__dirname, datafile);
   try {
-    const data = fs.readFileSync(dataPath, {encoding: "utf8", flag: "r"});
+    const data = fs.readFileSync(dataPath, { encoding: "utf8", flag: "r" });
     if (data.includes("\r\n")) {
       action(data.split("\r\n"));
     } else {
