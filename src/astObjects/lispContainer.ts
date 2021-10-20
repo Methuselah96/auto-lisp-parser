@@ -42,11 +42,11 @@ export class LispContainer extends LispAtom {
   }
 
   // Finds a child LispAtom if it legitimately touches/contains the Position
-  getAtomFromPos(loc: Position): LispAtom | null {
+  getAtomFromPos(loc: Position): LispAtom {
     if (!this.contains(loc)) {
       return null;
     } else {
-      for (let i = 0; i < this.atoms.length; i++) {
+      for (var i = 0; i < this.atoms.length; i++) {
         const lispObj = this.atoms[i];
         if (lispObj.contains(loc)) {
           if (lispObj instanceof LispContainer) {
@@ -89,11 +89,8 @@ export class LispContainer extends LispAtom {
   }
 
   // Finds a child LispContainer if it legitimately touches/contains the Position
-  getExpressionFromPos(
-    loc: Position,
-    parent: boolean = false
-  ): LispContainer | null {
-    let result: LispContainer | null = null;
+  getExpressionFromPos(loc: Position, parent: boolean = false): LispContainer {
+    let result: LispContainer = null;
     if (this.contains(loc)) {
       this.atoms.forEach((lispObj) => {
         if (lispObj.contains(loc) && lispObj instanceof LispContainer) {
@@ -107,7 +104,7 @@ export class LispContainer extends LispAtom {
   }
 
   // Finds the parent LispContainer of any existing ILispFragment, typically used with a primary Container like Defun
-  getParentOfExpression(child: ILispFragment): LispContainer | null {
+  getParentOfExpression(child: ILispFragment): LispContainer {
     const pos = new Position(child.line, child.column);
     return this.getExpressionFromPos(pos, true);
   }
@@ -130,7 +127,7 @@ export class LispContainer extends LispAtom {
   }
 
   // This version was necessary to properly alternate over SETQ Name vs Value
-  private static isValidForSetq(atom: ILispFragment): boolean {
+  private isValidForSetq(atom: ILispFragment): boolean {
     return (
       !atom.isComment() &&
       !["'", "(", ")", "."].includes(atom.symbol) &&
@@ -139,12 +136,12 @@ export class LispContainer extends LispAtom {
   }
 
   // This is general purpose utility to make sure primitives such as strings, numbers and decorations are not evaluated
-  private static notNumberStringOrProtected(atom: ILispFragment): boolean {
+  private notNumberStringOrProtected(atom: ILispFragment): boolean {
     return (
       !atom.isComment() &&
       !["'", "(", ")", "."].includes(atom.symbol) &&
       !/^".*"$/.test(atom.symbol) &&
-      !/^'?-?\d+[eE\-]{0,2}\d*$/.test(atom.symbol)
+      !/^\'{0,1}\-{0,1}\d+[eE\-]{0,2}\d*$/.test(atom.symbol)
     );
   }
 
@@ -154,8 +151,8 @@ export class LispContainer extends LispAtom {
     if (index < this.atoms.length) {
       const atom = this.atoms[index];
       const flag = forSetq
-        ? LispContainer.isValidForSetq(atom)
-        : LispContainer.notNumberStringOrProtected(atom);
+        ? this.isValidForSetq(atom)
+        : this.notNumberStringOrProtected(atom);
       if (atom instanceof LispAtom && flag) {
         return index;
       } else {
@@ -167,7 +164,7 @@ export class LispContainer extends LispAtom {
   }
 
   // Returns a meaningful value from the LispContainer, this is useful for avoiding comments an structural symbols
-  getNthKeyAtom(significantNth: number): ILispFragment | null {
+  getNthKeyAtom(significantNth: number): ILispFragment {
     let num = 0;
     for (let i = 0; i <= significantNth; i++) {
       num = this.nextKeyIndex(num, true);
@@ -186,20 +183,20 @@ export class LispContainer extends LispAtom {
     const lispObj = this.atoms[index];
     if (!lispObj) {
       return result;
-    } else if (regx.test(lispObj.symbol)) {
+    } else if (regx.test(lispObj.symbol) === true) {
       result.push(this);
-      if (all) {
+      if (all === true) {
         this.atoms
           .filter((f) => f.body)
           .forEach((atom: ILispFragment) => {
-            result = result.concat(atom.body!.findChildren(regx, all));
+            result = result.concat(atom.body.findChildren(regx, all));
           });
       }
     } else {
       this.atoms
         .filter((f) => f.body)
         .forEach((atom: ILispFragment) => {
-          result = result.concat(atom.body!.findChildren(regx, all));
+          result = result.concat(atom.body.findChildren(regx, all));
         });
     }
     return result;
@@ -218,7 +215,7 @@ export class LispContainer extends LispAtom {
       if (item instanceof LispContainer) {
         item.flatten(into);
       } else if (item instanceof LispAtom) {
-        into!.push(item);
+        into.push(item);
       }
     });
     return into;
@@ -235,22 +232,22 @@ export class LispContainer extends LispAtom {
       isRoot = true;
     }
     this.atoms.forEach((item) => {
-      while (context!.line < item.line) {
-        context!.result += this.linefeed;
-        context!.line++;
-        context!.column = 0;
+      while (context.line < item.line) {
+        context.result += this.linefeed;
+        context.line++;
+        context.column = 0;
       }
-      while (context!.column < item.column) {
-        context!.result += " ";
-        context!.column++;
+      while (context.column < item.column) {
+        context.result += " ";
+        context.column++;
       }
       if (item instanceof LispContainer) {
         item.asText(context);
       } else {
-        context!.result += item.symbol;
-        context!.column += item.symbol.length;
+        context.result += item.symbol;
+        context.column += item.symbol.length;
         if (item.isComment() && !item.isLineComment()) {
-          context!.line += item.symbol.split(this.linefeed).length - 1;
+          context.line += item.symbol.split(this.linefeed).length - 1;
         }
       }
     });

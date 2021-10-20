@@ -1,6 +1,6 @@
 {
   "name": "auto-lisp-parser",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "AutoLISP parser",
   "license": "Apache-2.0",
   "files": [

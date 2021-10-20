@@ -3,10 +3,25 @@ import { ILispFragment } from "../astObjects/ILispFragment";
 import { LispAtom } from "../astObjects/lispAtom";
 
 export namespace FlatContainerServices {
+  export function isPossibleFunctionReference(
+    atoms: Array<ILispFragment>,
+    from: ILispFragment
+  ): boolean {
+    const previous = lookBehindForPreviousNonCommentAtom(atoms, from);
+    if (!previous || from.isPrimitive()) {
+      return false;
+    }
+    if (previous.symbol === "(") {
+      // this final test avoid the dynamic list constructor false positive
+      return atoms[from.flatIndex - 1]?.symbol !== "'";
+    }
+    return /^(\'|DEFUN|DEFUN-Q)$/i.test(previous.symbol);
+  }
+
   export function getParentAtomIfValidSetq(
     atoms: Array<ILispFragment>,
     from: ILispFragment | number
-  ): ILispFragment | null {
+  ): ILispFragment {
     const index = typeof from === "number" ? from : from.flatIndex;
     const parentAtom = getParentRootAtomIfOfType(atoms, index, "setq");
     if (!parentAtom || !isValidSetqContext(atoms, index)) {
@@ -30,7 +45,7 @@ export namespace FlatContainerServices {
   export function getParentAtomIfDefun(
     atoms: Array<ILispFragment>,
     from: ILispFragment | number
-  ): ILispFragment | null {
+  ): ILispFragment {
     const index = typeof from === "number" ? from : from.flatIndex;
     const parentAtom = getParentRootAtomIfOfType(
       atoms,
@@ -56,7 +71,7 @@ export namespace FlatContainerServices {
     // This check was added because non-localized variables within defuns used as the
     // return value was getting artificially flagged by the defun comments as @Global
     const next = lookAheadForNextNonCommentAtom(atoms, parentAtom.flatIndex);
-    if (next!.flatIndex !== from.flatIndex) {
+    if (next.flatIndex !== from.flatIndex) {
       return false;
     }
 
@@ -94,8 +109,21 @@ export namespace FlatContainerServices {
   function lookAheadForNextNonCommentAtom(
     atoms: Array<ILispFragment>,
     fromIndex: number
-  ): ILispFragment | null {
+  ): ILispFragment {
     for (let i = fromIndex + 1; i < atoms.length; i++) {
+      const atom = atoms[i];
+      if (!atom.isComment()) {
+        return atom;
+      }
+    }
+    return null;
+  }
+
+  function lookBehindForPreviousNonCommentAtom(
+    atoms: Array<ILispFragment>,
+    from: ILispFragment
+  ): ILispFragment {
+    for (let i = from.flatIndex - 1; i >= 0; i--) {
       const atom = atoms[i];
       if (!atom.isComment()) {
         return atom;
@@ -142,7 +170,7 @@ export namespace FlatContainerServices {
           ? [aheadComment.flatIndex, blockComment.flatIndex]
           : aheadComment
           ? [aheadComment.flatIndex]
-          : [blockComment!.flatIndex];
+          : [blockComment.flatIndex];
     }
     // requires explicit conversion because it could be comparing one or more booleans or nulls
     return Boolean(
@@ -150,6 +178,18 @@ export namespace FlatContainerServices {
         blockComment?.symbol.toUpperCase().includes(GlobalFlag)
     );
   }
+
+  // This is no longer used, but could be useful in the future
+  // export function hasEmbededGlobalComment(atoms: Array<ILispFragment>, source: ILispFragment): boolean {
+  // 	let result = false;
+  // 	source.commentLinks?.forEach(index => {
+  // 		const atom = atoms[index];
+  // 		if (atom.symbol.toUpperCase().includes(GlobalFlag)) {
+  // 			result = true;
+  // 		}
+  // 	});
+  // 	return result;
+  // }
 
   function lookBehindForBlockComment(
     atoms: Array<ILispFragment>,

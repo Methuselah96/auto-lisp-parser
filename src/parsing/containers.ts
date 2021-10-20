@@ -32,7 +32,7 @@ export class ContainerBuildContext {
   basicSymbolMap: Map<string, Array<number>>;
   state: ParseState;
 
-  constructor(text: string) {
+  constructor(docOrText: string) {
     this.groupStarted = false;
     this.basicSymbolMap = new Map();
     this.flatView = [];
@@ -40,8 +40,19 @@ export class ContainerBuildContext {
     this.state = ParseState.UNKNOWN;
     this.isEscaping = false;
     this.temp = new StringBuilder();
-    this.data = text;
-    this.linefeed = text.indexOf("\r\n") >= 0 ? "\r\n" : "\n";
+    this.data = docOrText;
+    this.linefeed = docOrText.indexOf("\r\n") >= 0 ? "\r\n" : "\n";
+  }
+
+  dispose() {
+    this.flatView.length = 0;
+    delete this.flatView;
+    this.containerView.length = 0;
+    delete this.containerView;
+    delete this.basicSymbolMap;
+    delete this.state;
+    delete this.data;
+    delete this.temp;
   }
 
   createAtomFromTempAndReset(createIn: number, newState?: ParseState): void {
@@ -82,7 +93,7 @@ export class ContainerBuildContext {
     const lowerKey = value.toLowerCase();
     if (!primitiveRegex.test(lowerKey) && !SymbolServices.isNative(lowerKey)) {
       if (this.basicSymbolMap.has(lowerKey)) {
-        this.basicSymbolMap.get(lowerKey)!.push(this.atomIndex - 1);
+        this.basicSymbolMap.get(lowerKey).push(this.atomIndex - 1);
       } else {
         this.basicSymbolMap.set(lowerKey, [this.atomIndex - 1]);
       }
@@ -109,7 +120,7 @@ export class ContainerBuildContext {
 
   markGloballyTaggedAtoms(): void {
     [...this.basicSymbolMap.keys()].forEach((key) => {
-      this.basicSymbolMap.get(key)!.forEach((flatIndex) => {
+      this.basicSymbolMap.get(key).forEach((flatIndex) => {
         const flag =
           FlatContainerServices.verifyAtomIsDefunAndGlobalized(
             this.flatView,
@@ -159,7 +170,11 @@ export function getDocumentContainer(
       : ContextOrContent;
   _getDocumentContainer(ctx);
   ctx.markGloballyTaggedAtoms();
-  return ctx.containerView[0];
+  try {
+    return ctx.containerView[0];
+  } finally {
+    ctx.dispose();
+  }
 }
 
 export function _getDocumentContainer(ctx: ContainerBuildContext): number {

@@ -4,7 +4,7 @@ import { Range } from "../range";
 
 // General purpose test for basic known primitive values; Including: T, NIL, Number, (single or multi-line) Strings & Comments
 export const primitiveRegex =
-  /^([()'.]|"[\s\S]*"|;[\s\S]*|'?[tT]|'?[nN][iI][lL]|'?-?\d+[eE][+-]?\d+|-?\d+|-?\d+\.\d+)$/;
+  /^([\(\)\'\.]|"[\s\S]*"|;[\s\S]*|'?[tT]|'?[nN][iI][lL]|'?-?\d+[eE][+-]?\d+|-?\d+|-?\d+\.\d+)$/;
 const primitiveGlyphs = ["'", "(", ")", ".", ";"]; //, '']; //, null, undefined];
 
 // Represents the most fundamental building blocks of a lisp document

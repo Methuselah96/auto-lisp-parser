@@ -1,4 +1,8 @@
-import { loadAllResources } from "../resources";
+import * as Resources from "../resources";
+import { ReadonlyDocument } from "../project/readOnlyDocument";
+import { ISymbolBase } from "../symbols";
+import { FlatContainerServices } from "./flatContainerServices";
+import { ILispFragment } from "../astObjects/ILispFragment";
 
 export namespace SymbolServices {
   // These are some basic symbols that may or may not appear in our lookup sources
@@ -8,13 +12,12 @@ export namespace SymbolServices {
   // This list of native keys is used to detect symbols we would not want to track
   const _nativeKeys: Array<string> = [];
   function generateNativeKeys(): void {
-    const { internalLispFuncs, webHelpContainer } = loadAllResources();
     _nativeKeys.push(
       ...new Set(
-        webHelpContainer.functions
-          .concat(webHelpContainer.ambiguousFunctions)
-          .concat(webHelpContainer.enumerators)
-          .concat(internalLispFuncs)
+        Object.keys(Resources.webHelpContainer.functions)
+          .concat(Object.keys(Resources.webHelpContainer.ambiguousFunctions))
+          .concat(Object.keys(Resources.webHelpContainer.enumerators))
+          .concat(Resources.internalLispFuncs)
       )
     );
     _nativeKeys.sort();
@@ -43,5 +46,34 @@ export namespace SymbolServices {
       }
     }
     return result;
+  }
+
+  export function hasGlobalFlag(
+    source: ReadonlyDocument | Array<ILispFragment>,
+    symbolRef: ISymbolBase
+  ): boolean {
+    source = Array.isArray(source)
+      ? source
+      : source.documentContainer.flatten();
+    const thisAtom = source[symbolRef?.asReference?.flatIndex ?? -1];
+    if (
+      !thisAtom ||
+      symbolRef.asHost ||
+      source[symbolRef.asReference.flatIndex - 1]?.isLeftParen() !== false
+    ) {
+      return false;
+    }
+
+    if (symbolRef.asReference.isDefinition) {
+      return FlatContainerServices.verifyAtomIsDefunAndGlobalized(
+        source,
+        thisAtom
+      );
+    } else {
+      return FlatContainerServices.verifyAtomIsSetqAndGlobalized(
+        source,
+        thisAtom
+      );
+    }
   }
 }
