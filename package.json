@@ -1,11 +1,12 @@
 {
   "name": "auto-lisp-parser",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "AutoLISP parser",
   "license": "Apache-2.0",
   "files": [
     "src",
     "lib",
+    "data",
     "NOTICE.md"
   ],
   "main": "./lib/index.js",
