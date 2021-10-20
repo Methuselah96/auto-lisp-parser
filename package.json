@@ -5,7 +5,8 @@
   "license": "Apache-2.0",
   "scripts": {
     "build": "tsc --declaration",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "prepack": "yarn build"
   },
   "devDependencies": {
     "@types/node": "^16.11.1",
